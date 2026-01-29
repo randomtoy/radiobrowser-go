@@ -1,5 +1,8 @@
 # radiobrowser-go
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/randomtoy/radiobrowser-go.svg)](https://pkg.go.dev/github.com/randomtoy/radiobrowser-go)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A simple, zero-dependency Go client library for the [Radio Browser API](https://www.radio-browser.info/) - a free and open-source database of internet radio stations.
 
 ## Features
@@ -21,9 +24,7 @@ go get github.com/randomtoy/radiobrowser-go
 
 Requires Go 1.22 or later.
 
-## Usage
-
-### Basic Station Search
+## Quick Start
 
 ```go
 package main
@@ -54,6 +55,26 @@ func main() {
     }
 }
 ```
+
+## Examples
+
+See the [examples](./examples) directory for complete working examples:
+
+| Example | Description |
+|---------|-------------|
+| [basic](./examples/basic) | Simple station search by country |
+| [search](./examples/search) | Advanced search with multiple filters |
+| [metadata](./examples/metadata) | Fetching countries, languages, tags, codecs |
+| [topstations](./examples/topstations) | Getting popular and trending stations |
+
+Run an example:
+
+```bash
+cd examples/basic
+go run main.go
+```
+
+## Usage
 
 ### Advanced Search with Multiple Filters
 
@@ -105,8 +126,8 @@ languages, err := rb.Languages(ctx, baseURL, "", rb.LanguagesOptions{})
 
 // Get popular tags
 tags, err := rb.Tags(ctx, baseURL, "", rb.TagsOptions{
-    Order: rb.StationOrderStationCount,
-    Limit: 50,
+    Order:   "stationcount",
+    Reverse: true,
 })
 ```
 
@@ -207,6 +228,11 @@ radiobrowser-go/
 ├── checks.go              # Station health check functions
 ├── clicks.go              # Click tracking functions
 ├── *_test.go              # Test files
+├── examples/              # Usage examples
+│   ├── basic/             # Basic station search
+│   ├── search/            # Advanced search
+│   ├── metadata/          # Metadata queries
+│   └── topstations/       # Popular stations
 └── internal/
     └── transport/         # HTTP transport layer
         ├── get.go         # HTTP GET helper
@@ -227,13 +253,34 @@ For automatic server discovery, see the [Radio Browser API documentation](https:
 
 Contributions are welcome! Please feel free to submit issues and pull requests.
 
-<!-- TODO: Add contribution guidelines -->
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-<!-- TODO: Add license information -->
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 Yuri Sergeev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
 
 ## Related Links
 
 - [Radio Browser Website](https://www.radio-browser.info/)
 - [Radio Browser API Documentation](https://api.radio-browser.info/)
+- [Go Package Documentation](https://pkg.go.dev/github.com/randomtoy/radiobrowser-go)
