@@ -30,6 +30,7 @@ func GetJSON(ctx context.Context, baseURL, path string, q url.Values, out any) e
 		return err
 	}
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("User-Agent", userAgent(ctx))
 
 	resp, err := defaultClient.Do(req)
 	if err != nil {

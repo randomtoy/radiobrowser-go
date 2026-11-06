@@ -28,6 +28,7 @@ func PostFormJSON(ctx context.Context, baseURL, path string, form url.Values, ou
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", userAgent(ctx))
 
 	resp, err := defaultClient.Do(req)
 	if err != nil {
