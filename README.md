@@ -3,18 +3,19 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/randomtoy/radiobrowser-go.svg)](https://pkg.go.dev/github.com/randomtoy/radiobrowser-go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A simple, zero-dependency Go client library for the [Radio Browser API](https://www.radio-browser.info/) - a free and open-source database of internet radio stations.
+A zero-dependency Go client for the [Radio Browser JSON API](https://de1.api.radio-browser.info/), a community database of internet radio stations. Requires Go 1.22 or later.
 
 ## Features
 
-- **Station Discovery** - Search and retrieve radio stations by name, country, language, codec, tag, and more
-- **Multiple Search Strategies** - Simple search by category, advanced multi-filter search, or lookup by UUID/URL
-- **Popularity Metrics** - Get top stations by votes, clicks, recent activity, or trending
-- **Metadata Access** - Retrieve lists of countries, languages, codecs, states, and tags with station counts
-- **Station Health Checks** - Access availability check results and detailed check steps
-- **User Interactions** - Vote for stations, track clicks, add new stations to the database
-- **Zero Dependencies** - Uses only Go standard library
-- **Context Support** - All API functions accept `context.Context` for timeout and cancellation
+- Station discovery by name, country code, language, codec, tags, UUID and stream URL.
+- Advanced filters, geographic radius searches, pagination and popularity rankings.
+- Countries, codecs, regions, languages and tags with station counts.
+- Availability checks, check steps, click history and station change history.
+- Voting, play registration and station creation with current subdivision/language codes.
+- API server statistics, mirror lists and configuration.
+- Context cancellation and application-specific User-Agent headers.
+
+The library covers the current, non-deprecated JSON endpoints documented by Radio Browser 0.7.45. Non-JSON exports, Prometheus `/metrics` and the deprecated `/countrycodes` endpoint are outside its scope.
 
 ## Installation
 
@@ -22,9 +23,7 @@ A simple, zero-dependency Go client library for the [Radio Browser API](https://
 go get github.com/randomtoy/radiobrowser-go
 ```
 
-Requires Go 1.22 or later.
-
-## Quick Start
+## Quick start
 
 ```go
 package main
@@ -33,272 +32,246 @@ import (
     "context"
     "fmt"
     "log"
+    "time"
 
     rb "github.com/randomtoy/radiobrowser-go"
 )
 
 func main() {
-    ctx := context.Background()
-    baseURL := "https://de1.api.radio-browser.info"
+    ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+    defer cancel()
+    ctx = rb.WithUserAgent(ctx, "MyRadio/1.0")
 
-    // Search stations by country
-    stations, err := rb.StationsSearch(ctx, baseURL, rb.StationByCountry, "Germany", rb.StationsOptions{
-        Limit: 10,
-        Order: rb.StationOrderVotes,
-    })
+    stations, err := rb.StationsSearch(ctx, "https://de1.api.radio-browser.info",
+        rb.StationByCountryCodeExact, "DE", rb.StationsOptions{
+            Limit: 10, Order: rb.StationOrderVotes, Reverse: true, HideBroken: true,
+        })
     if err != nil {
         log.Fatal(err)
     }
-
-    for _, s := range stations {
-        fmt.Printf("%s - %s (%d votes)\n", s.Name, s.Country, s.Votes)
+    for _, station := range stations {
+        fmt.Printf("%s (%s): %d votes\n", station.Name, station.CountryCode, station.Votes)
     }
 }
 ```
 
-## Examples
-
-See the [examples](./examples) directory for complete working examples:
-
-| Example | Description |
-|---------|-------------|
-| [basic](./examples/basic) | Simple station search by country |
-| [search](./examples/search) | Advanced search with multiple filters |
-| [metadata](./examples/metadata) | Fetching countries, languages, tags, codecs |
-| [topstations](./examples/topstations) | Getting popular and trending stations |
-
-Run an example:
-
-```bash
-cd examples/basic
-go run main.go
-```
-
-## Usage
+Every API function takes a context and a base URL. Set a deadline on the context to bound request duration; the shared HTTP client has no default timeout. HTTP, network and JSON decoding failures are returned as errors. For action responses, also inspect `OK` and `Message`: an HTTP-successful response can report an unsuccessful operation.
 
 ### User-Agent
 
-Every request sends `User-Agent: radiobrowser-go/0.2.0` by default, available as
-`rb.DefaultUserAgent`. Radio Browser [asks applications to identify themselves](https://de1.api.radio-browser.info/).
-Use `WithUserAgent` to send your application's name and version instead:
+Requests use `rb.DefaultUserAgent` (`radiobrowser-go/0.2.0`) unless overridden. Radio Browser asks clients to identify their application and version:
 
 ```go
 ctx := rb.WithUserAgent(context.Background(), "MyRadio/1.2")
-
-stations, err := rb.Stations(ctx, baseURL, rb.StationsOptions{Limit: 10})
 ```
 
-The override applies to all API calls using this context or a derived context,
-including POST requests. It does not change other contexts or a global setting,
-so different applications or clients can use different values concurrently.
-Leading and trailing whitespace is removed; an empty or whitespace-only value
-restores the library default. Existing calls require no changes.
+The setting is inherited by derived contexts. Whitespace is trimmed; an empty value restores the default.
 
-### Advanced Search with Multiple Filters
+## Search and pagination
+
+### Advanced filters
 
 ```go
 stations, err := rb.StationSearch(ctx, baseURL, rb.StationSearchOptions{
-    Country:    "United States",
-    Tag:        "jazz",
-    BitrateMin: 128,
-    Codec:      "MP3",
-    Limit:      20,
-    Order:      rb.StationOrderClickCount,
-    HideBroken: true,
-})
-```
-
-### Get Top Stations
-
-```go
-// Top voted stations
-topVoted, err := rb.StationsByVotes(ctx, baseURL, rb.StationsOptions{Limit: 10})
-
-// Most clicked stations
-topClicked, err := rb.StationsByClicks(ctx, baseURL, rb.StationsOptions{Limit: 10})
-
-// Recently played stations
-recentlyPlayed, err := rb.StationsByRecentClick(ctx, baseURL, rb.StationsOptions{Limit: 10})
-```
-
-### Lookup Stations by UUID
-
-```go
-stations, err := rb.StationsByUUID(ctx, baseURL, []string{
-    "96202c3a-0601-11e8-ae97-52543be04c81",
-    "960291ca-0601-11e8-ae97-52543be04c81",
-})
-```
-
-### Get Metadata
-
-```go
-// Get all countries with station counts
-countries, err := rb.Countries(ctx, baseURL, "", rb.CountriesOptions{})
-
-// Get available codecs
-codecs, err := rb.Codecs(ctx, baseURL, "", rb.CodecsOptions{})
-
-// Get languages
-languages, err := rb.Languages(ctx, baseURL, "", rb.LanguagesOptions{})
-
-// Get popular tags
-tags, err := rb.Tags(ctx, baseURL, "", rb.TagsOptions{
-    Order:   "stationcount",
-    Reverse: true,
-})
-```
-
-### Vote for a Station
-
-```go
-resp, err := rb.VoteForStation(ctx, baseURL, "96202c3a-0601-11e8-ae97-52543be04c81")
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Printf("Vote result: %v - %s\n", resp.OK, resp.Message)
-```
-
-### Add a New Station
-
-```go
-resp, err := rb.AddStation(ctx, baseURL, rb.AddStationRequest{
-    Name:        "My Radio Station",
-    URL:         "https://stream.example.com/live",
-    Homepage:    "https://example.com",
     CountryCode: "US",
-    Language:    "english",
-    Tags:        "music,pop,rock",
+    TagList:     []string{"jazz", "instrumental"}, // Every tag must match.
+    Codec:       "MP3",
+    BitrateMin:  128,
+    Limit:       20,
+    Order:       rb.StationOrderClickCount,
+    Reverse:     true,
+    HideBroken:  true,
 })
+```
+
+`HasGeoInfo`, `HasExtendedInfo` and `IsHTTPS` are `*bool`: `nil` leaves the filter unset, while pointers to `true` or `false` select either side. `NameExact`, `CountryExact`, `StateExact`, `LanguageExact` and `TagExact` enable exact matches for their corresponding string filters.
+
+### Geographic search
+
+```go
+lat, lon, radius := 52.37, 4.90, 50000.0
+stations, err := rb.StationSearch(ctx, baseURL, rb.StationSearchOptions{
+    GeoLat: &lat, GeoLong: &lon, GeoDistance: &radius,
+    Limit: 10, HideBroken: true,
+})
+```
+
+Coordinates and radius use `*float64`, so zero remains a valid explicit value. Latitude must be between -90 and 90, longitude between -180 and 180, and radius must be non-negative and finite. Radius and returned `Station.GeoDistance` are measured in meters. Provide both coordinates for a meaningful distance search.
+
+### Limits and offsets
+
+All paginated option types support `Limit` and `LimitSet`. A positive `Limit` is sent automatically. The zero-value options omit the limit and use the server default; to explicitly request zero rows, set `LimitSet: true`:
+
+```go
+stations, err := rb.Stations(ctx, baseURL, rb.StationsOptions{
+    Limit: 0, LimitSet: true,
+})
+```
+
+For ordinary paging use, for example, `Limit: 20, Offset: 40`. Metadata options also support `Order`, `Reverse`, `HideBroken`, `Offset` and `Limit`. Change, check and click history use their UUID cursor fields rather than offsets. Ranking endpoints apply their own order; use `Stations` or `StationSearch` for custom `Order`/`Reverse` sorting.
+
+### UUID and URL lookup
+
+```go
+stations, err := rb.StationsByUUID(ctx, baseURL, []string{stationUUID})
+```
+
+```go
+stations, err := rb.StationsByURL(ctx, baseURL,
+    "https://example.com/live?channel=jazz", rb.StationsOptions{})
+```
+
+URLs are sent as query parameters, preserving their own query strings. Text search and metadata filters support spaces, Unicode and reserved characters.
+
+## Metadata and station health
+
+```go
+countries, err := rb.Countries(ctx, baseURL, "", rb.CountriesOptions{
+    Order: "stationcount", Reverse: true, Limit: 10,
+})
+```
+
+```go
+states, err := rb.States(ctx, baseURL, "Germany", "", rb.StatesOptions{Limit: 10})
+```
+
+For `States`, `country` is a country name; the independent `filter` argument matches region names. An empty filter lists all regions of the selected country. Countries expose their ISO country code through `ISO3166_1`. All five metadata models decode both current numeric station counts and legacy quoted counts into `int`.
+
+```go
+checks, err := rb.StationCheckResults(ctx, baseURL, stationUUID, rb.ChecksOptions{Limit: 5})
+```
+
+```go
+steps, err := rb.StationCheckSteps(ctx, baseURL, []string{stationUUID})
+```
+
+An empty station UUID retrieves the latest checks across stations. Supplying a UUID selects that station's check history. `StationClicks` and `StationsChanged` similarly accept an empty UUID for a global feed.
+
+## Station actions
+
+Register a play when the user starts playback. The API counts at most one play per IP address and station per day; the response includes the station name and playable URL:
+
+```go
+play, err := rb.StationClickCounter(ctx, baseURL, stationUUID)
 if err != nil {
     log.Fatal(err)
 }
-fmt.Printf("Added station with UUID: %s\n", resp.UUID)
+if !play.OK {
+    log.Fatal(play.Message)
+}
+fmt.Println(play.URL)
 ```
 
-### Check Station Health
+Vote with `VoteForStation`. Create a station with the current code-based fields:
 
 ```go
-// Get check results for a station
-checks, err := rb.StationCheckResults(ctx, baseURL, "96202c3a-0601-11e8-ae97-52543be04c81", rb.StationCheckOptions{
-    Limit: 5,
+added, err := rb.AddStation(ctx, baseURL, rb.AddStationRequest{
+    Name:          "My Radio",
+    URL:           "https://example.com/live",
+    Homepage:      "https://example.com",
+    CountryCode:   "NL",
+    ISO3166_2:     "NL-NH",
+    LanguageCodes: "dut,eng",
+    Tags:          "jazz,instrumental",
 })
-
-// Get detailed check steps
-steps, err := rb.StationCheckSteps(ctx, baseURL, []string{"96202c3a-0601-11e8-ae97-52543be04c81"})
 ```
 
-## API Reference
+`LanguageCodes` uses comma-separated ISO 639-2/B codes. `ISO3166_2` identifies a country subdivision. The legacy creation fields `State` and `Language` remain available but are deprecated. `GeoLat` and `GeoLong` are optional pointers, with the same coordinate validation as search.
 
-### Station Functions
+## API servers
 
-| Function | Description |
-|----------|-------------|
-| `Stations` | Get all stations with pagination and ordering |
-| `StationsSearch` | Search by kind (name, codec, country, language, tag, etc.) |
-| `StationSearch` | Advanced search with multiple filters |
-| `StationsByUUID` | Get stations by their UUIDs |
-| `StationsByURL` | Find stations by streaming URL |
-| `StationsByVotes` | Get top voted stations |
-| `StationsByClicks` | Get most clicked stations |
-| `StationsByRecentClick` | Get recently played stations |
-| `StationsByRecentlyChanged` | Get recently modified stations |
-| `StationsChanged` | Track changes to stations |
-| `StationsBroken` | Get broken/unavailable stations |
-
-### Metadata Functions
-
-| Function | Description |
-|----------|-------------|
-| `Countries` | List countries with station counts |
-| `Codecs` | List available audio codecs |
-| `States` | List states/regions by country |
-| `Languages` | List available languages |
-| `Tags` | List available tags |
-| `StreamingServers` | Get Radio Browser network servers |
-
-### Action Functions
-
-| Function | Description |
-|----------|-------------|
-| `VoteForStation` | Vote for a station |
-| `AddStation` | Add a new station to the database |
-| `StationClickCounter` | Register a click/play event |
-
-### Check Functions
-
-| Function | Description |
-|----------|-------------|
-| `StationCheckResults` | Get availability check results |
-| `StationCheckSteps` | Get detailed check steps |
-| `StationClicks` | Get click history for a station |
-
-## Project Structure
-
-```
-radiobrowser-go/
-├── go.mod                 # Module definition (Go 1.22+)
-├── types.go               # Type definitions (Station, Country, etc.)
-├── stations.go            # Station query functions
-├── stations_options.go    # Search options and constants
-├── meta.go                # Metadata query functions
-├── actions.go             # Action functions (vote, add station)
-├── checks.go              # Station health check functions
-├── clicks.go              # Click tracking functions
-├── *_test.go              # Test files
-├── examples/              # Usage examples
-│   ├── basic/             # Basic station search
-│   ├── search/            # Advanced search
-│   ├── metadata/          # Metadata queries
-│   └── topstations/       # Popular stations
-└── internal/
-    └── transport/         # HTTP transport layer
-        ├── get.go         # HTTP GET helper
-        └── post_form.go   # HTTP POST form helper
+```go
+stats, err := rb.Stats(ctx, baseURL)
 ```
 
-## Radio Browser API Servers
+```go
+config, err := rb.Config(ctx, baseURL)
+```
 
-Radio Browser runs on multiple servers. You can use any of the following base URLs:
+```go
+mirrors, err := rb.Servers(ctx, baseURL)
+```
 
-- `https://de1.api.radio-browser.info`
-- `https://nl1.api.radio-browser.info`
-- `https://at1.api.radio-browser.info`
+`Servers` lists Radio Browser API mirrors with their hostname and IPv4/IPv6 address. Radio Browser recommends DNS lookup of `all.api.radio-browser.info`, followed by reverse lookup, when client-side DNS is available; the HTTP endpoint is its fallback. The library accepts the selected server URL explicitly and does not automatically discover or retry mirrors.
 
-For automatic server discovery, see the [Radio Browser API documentation](https://api.radio-browser.info/).
+`StreamingServers` is a different endpoint: it lists audio streaming servers such as Icecast, including their administrative/status metadata. It does not list API mirrors.
 
-## Contributing
+## API reference
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
+All paths below use the `/json` prefix. Optional filters, station UUIDs and pagination parameters are omitted for brevity.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+| Function | Endpoint / purpose |
+|----------|--------------------|
+| `Stations` | `/stations` — all stations |
+| `StationsSearch` | `/stations/{kind}/{term}` — all 14 documented simple search variants |
+| `StationSearch` | `/stations/search` — advanced filters and geographic search |
+| `StationsByUUID` | `/stations/byuuid?uuids=...` |
+| `StationsByURL` | `/stations/byurl?url=...` |
+| `StationsByClicks` | `/stations/topclick` — most clicks in the last 24 hours |
+| `StationsByVotes` | `/stations/topvote` |
+| `StationsByRecentClick` | `/stations/lastclick` |
+| `StationsByRecentlyChanged` | `/stations/lastchange` |
+| `StationsChanged` | `/stations/changed` — old station versions |
+| `StationsBroken` | `/stations/broken` |
+| `Countries` | `/countries` |
+| `Codecs` | `/codecs` |
+| `States` | `/states` |
+| `Languages` | `/languages` |
+| `Tags` | `/tags` |
+| `StreamingServers` | `/streamingservers` — audio streaming servers |
+| `StationCheckResults` | `/checks` |
+| `StationCheckSteps` | `/checksteps?uuids=...` |
+| `StationClicks` | `/clicks` — play history |
+| `StationClickCounter` | `/url/{uuid}` — register playback and retrieve the stream URL |
+| `VoteForStation` | `/vote/{uuid}` |
+| `AddStation` | `/add` — HTTP POST form, JSON response |
+| `Stats` | `/stats` — `ServerStats` |
+| `Servers` | `/servers` — `[]ServerMirror` |
+| `Config` | `/config` — `ServerConfig` |
+
+Search order constants cover all documented sort keys, including random order. `ClickCount` covers the last 24 hours; `ClickTrend` compares the last two days.
+
+## Migration from v0.1.x
+
+`Station.GeoLat` and `Station.GeoLong` are now `*float64`. Check for `nil` before dereferencing; unknown coordinates are no longer confused with `(0, 0)`:
+
+```go
+if station.GeoLat != nil && station.GeoLong != nil {
+    fmt.Printf("%.4f, %.4f\n", *station.GeoLat, *station.GeoLong)
+}
+```
+
+Station responses also expose `ISO3166_2`, `LastLocalCheckTimeISO`, `SSLError` and nullable `GeoDistance`. `Country` remains available but is deprecated in favor of `CountryCode`; country-name search endpoints remain supported. Existing `Limit: 0` behavior is preserved unless `LimitSet` is enabled. Metadata `StationCount` fields remain ordinary `int` values.
+
+## Examples and validation
+
+| Example | Description |
+|---------|-------------|
+| [basic](./examples/basic) | Country-code search |
+| [search](./examples/search) | Advanced filters, text search and geographic radius |
+| [metadata](./examples/metadata) | Bounded countries, tags, codecs, languages and regions |
+| [topstations](./examples/topstations) | Votes, 24-hour clicks, recent activity and trends |
+| [server](./examples/server) | Server statistics and configuration; optional HTTP mirror lookup |
+
+Run from the repository root:
+
+```bash
+go run ./examples/basic
+go run ./examples/search
+go run ./examples/metadata
+go run ./examples/topstations
+go run ./examples/server
+```
+
+Examples only read API data. Tests exercise station creation, voting and play registration against local HTTP servers. The regular test suite does not depend on the public API:
+
+```bash
+go test ./...
+go test -race ./...
+go vet ./...
+go build ./...
+```
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-```
-MIT License
-
-Copyright (c) 2025 Yuri Sergeev
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
-
-## Related Links
-
-- [Radio Browser Website](https://www.radio-browser.info/)
-- [Radio Browser API Documentation](https://api.radio-browser.info/)
-- [Go Package Documentation](https://pkg.go.dev/github.com/randomtoy/radiobrowser-go)
+[MIT](./LICENSE).

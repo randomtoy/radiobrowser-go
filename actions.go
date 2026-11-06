@@ -10,6 +10,7 @@ import (
 	"github.com/randomtoy/radiobrowser-go/internal/transport"
 )
 
+// VoteForStation votes for a station. Inspect the returned OK and Message fields.
 func VoteForStation(ctx context.Context, baseURL string, stationUUID string) (*VoteResponse, error) {
 	stationUUID = strings.TrimSpace(stationUUID)
 	if stationUUID == "" {
@@ -95,6 +96,7 @@ func (r AddStationRequest) toForm() url.Values {
 	return f
 }
 
+// AddStation creates a station. Inspect the returned OK and Message fields.
 func AddStation(ctx context.Context, baseURL string, req AddStationRequest) (*AddStationResponse, error) {
 	if err := req.validate(); err != nil {
 		return nil, err

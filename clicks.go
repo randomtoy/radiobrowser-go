@@ -34,6 +34,7 @@ func (o ClicksOptions) toQuery() url.Values {
 	return q
 }
 
+// StationClicks lists play events; an empty UUID selects events across stations.
 func StationClicks(
 	ctx context.Context,
 	baseURL string,
@@ -54,6 +55,8 @@ func StationClicks(
 	return out, nil
 }
 
+// StationClickCounter registers playback and retrieves the stream URL. The API counts
+// at most one play per station and IP address per day.
 func StationClickCounter(
 	ctx context.Context,
 	baseURL string,

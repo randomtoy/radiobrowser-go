@@ -16,21 +16,21 @@ import (
 const baseURL = "https://de1.api.radio-browser.info"
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(rb.WithUserAgent(context.Background(), "radiobrowser-go-examples/0.2.0"), 30*time.Second)
 	defer cancel()
 
 	// Search for jazz stations in the US with high bitrate
-	fmt.Println("=== Jazz stations in the US (MP3, 128+ kbps) ===\n")
+	fmt.Printf("=== Jazz stations in the US (MP3, 128+ kbps) ===\n\n")
 
 	stations, err := rb.StationSearch(ctx, baseURL, rb.StationSearchOptions{
-		Country:    "United States",
-		Tag:        "jazz",
-		Codec:      "MP3",
-		BitrateMin: 128,
-		Limit:      10,
-		Order:      rb.StationOrderClickCount,
-		Reverse:    true,
-		HideBroken: true,
+		CountryCode: "US",
+		Tag:         "jazz",
+		Codec:       "MP3",
+		BitrateMin:  128,
+		Limit:       10,
+		Order:       rb.StationOrderClickCount,
+		Reverse:     true,
+		HideBroken:  true,
 	})
 	if err != nil {
 		log.Fatalf("Failed to search stations: %v", err)
@@ -39,7 +39,7 @@ func main() {
 	printStations(stations)
 
 	// Search by multiple tags
-	fmt.Println("\n=== Classical music stations with HTTPS ===\n")
+	fmt.Printf("\n=== Classical music stations with HTTPS ===\n\n")
 
 	isHTTPS := true
 	classical, err := rb.StationSearch(ctx, baseURL, rb.StationSearchOptions{
@@ -57,7 +57,7 @@ func main() {
 	printStations(classical)
 
 	// Search by name
-	fmt.Println("\n=== Stations with 'BBC' in name ===\n")
+	fmt.Printf("\n=== Stations with 'BBC' in name ===\n\n")
 
 	bbc, err := rb.StationsSearch(
 		ctx,
@@ -76,6 +76,18 @@ func main() {
 	}
 
 	printStations(bbc)
+
+	// Search within 50 km of Amsterdam. Coordinates and radius may be zero.
+	lat, lon, radius := 52.37, 4.90, 50000.0
+	fmt.Printf("\n=== Stations within 50 km of Amsterdam ===\n\n")
+	nearby, err := rb.StationSearch(ctx, baseURL, rb.StationSearchOptions{
+		GeoLat: &lat, GeoLong: &lon, GeoDistance: &radius,
+		Limit: 5, HideBroken: true,
+	})
+	if err != nil {
+		log.Fatalf("Failed geographic search: %v", err)
+	}
+	printStations(nearby)
 }
 
 func printStations(stations []rb.Station) {
@@ -85,15 +97,16 @@ func printStations(stations []rb.Station) {
 	}
 
 	for i, s := range stations {
-		fmt.Printf("%d. %s (%s)\n", i+1, s.Name, s.Country)
+		fmt.Printf("%d. %s (%s)\n", i+1, s.Name, s.CountryCode)
 		fmt.Printf("   Codec: %s @ %d kbps | Tags: %s\n", s.Codec, s.Bitrate, truncate(s.Tags, 50))
-		fmt.Printf("   Votes: %d | Clicks: %d\n", s.Votes, s.ClickCount)
+		fmt.Printf("   Votes: %d | Clicks (24h): %d\n", s.Votes, s.ClickCount)
 	}
 }
 
 func truncate(s string, maxLen int) string {
-	if len(s) <= maxLen {
+	runes := []rune(s)
+	if len(runes) <= maxLen {
 		return s
 	}
-	return s[:maxLen-3] + "..."
+	return string(runes[:maxLen-3]) + "..."
 }
