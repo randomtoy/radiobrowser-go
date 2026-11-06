@@ -16,15 +16,15 @@ import (
 const baseURL = "https://de1.api.radio-browser.info"
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(rb.WithUserAgent(context.Background(), "radiobrowser-go-examples/0.2.0"), 30*time.Second)
 	defer cancel()
 
 	// Search for German radio stations, sorted by votes
 	stations, err := rb.StationsSearch(
 		ctx,
 		baseURL,
-		rb.StationByCountry,
-		"Germany",
+		rb.StationByCountryCodeExact,
+		"DE",
 		rb.StationsOptions{
 			Limit:      10,
 			Order:      rb.StationOrderVotes,
@@ -40,9 +40,9 @@ func main() {
 
 	for i, s := range stations {
 		fmt.Printf("%d. %s\n", i+1, s.Name)
-		fmt.Printf("   Country: %s\n", s.Country)
+		fmt.Printf("   Country: %s\n", s.CountryCode)
 		fmt.Printf("   Codec: %s, Bitrate: %d kbps\n", s.Codec, s.Bitrate)
-		fmt.Printf("   Votes: %d, Clicks: %d\n", s.Votes, s.ClickCount)
+		fmt.Printf("   Votes: %d, Clicks (24h): %d\n", s.Votes, s.ClickCount)
 		fmt.Printf("   URL: %s\n", s.URL)
 		fmt.Println()
 	}

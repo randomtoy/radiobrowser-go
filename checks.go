@@ -34,6 +34,7 @@ func (o ChecksOptions) toQuery() url.Values {
 	return q
 }
 
+// StationCheckResults returns check history for a station, or latest global checks for an empty UUID.
 func StationCheckResults(
 	ctx context.Context,
 	baseURL string,
@@ -54,6 +55,7 @@ func StationCheckResults(
 	return out, nil
 }
 
+// StationCheckSteps returns the steps used to check the supplied station UUIDs.
 func StationCheckSteps(ctx context.Context, baseURL string, stationUUIDs []string) ([]StationCheckStep, error) {
 	uuids := make([]string, 0, len(stationUUIDs))
 	for _, s := range stationUUIDs {

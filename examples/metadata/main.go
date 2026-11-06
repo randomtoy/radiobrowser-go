@@ -17,88 +17,86 @@ import (
 const baseURL = "https://de1.api.radio-browser.info"
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(rb.WithUserAgent(context.Background(), "radiobrowser-go-examples/0.2.0"), 30*time.Second)
 	defer cancel()
 
 	// Get countries with most stations
-	fmt.Println("=== Top 10 Countries by Station Count ===\n")
+	fmt.Printf("=== Top 10 Countries by Station Count ===\n\n")
 
 	countries, err := rb.Countries(ctx, baseURL, "", rb.CountriesOptions{
 		Order:   "stationcount",
 		Reverse: true,
+		Limit:   10,
 	})
 	if err != nil {
 		log.Fatalf("Failed to get countries: %v", err)
 	}
 
-	for i, c := range countries[:min(10, len(countries))] {
+	for i, c := range countries {
 		fmt.Printf("%2d. %-30s (%s) - %d stations\n", i+1, c.Name, c.ISO3166_1, c.StationCount)
 	}
 
 	// Get popular tags
-	fmt.Println("\n=== Top 15 Popular Tags ===\n")
+	fmt.Printf("\n=== Top 15 Popular Tags ===\n\n")
 
 	tags, err := rb.Tags(ctx, baseURL, "", rb.TagsOptions{
 		Order:   "stationcount",
 		Reverse: true,
+		Limit:   15,
 	})
 	if err != nil {
 		log.Fatalf("Failed to get tags: %v", err)
 	}
 
-	for i, t := range tags[:min(15, len(tags))] {
+	for i, t := range tags {
 		fmt.Printf("%2d. %-20s - %d stations\n", i+1, t.Name, t.StationCount)
 	}
 
 	// Get available codecs
-	fmt.Println("\n=== Available Codecs ===\n")
+	fmt.Printf("\n=== Available Codecs ===\n\n")
 
 	codecs, err := rb.Codecs(ctx, baseURL, "", rb.CodecsOptions{
 		Order:   "stationcount",
 		Reverse: true,
+		Limit:   10,
 	})
 	if err != nil {
 		log.Fatalf("Failed to get codecs: %v", err)
 	}
 
-	for i, c := range codecs[:min(10, len(codecs))] {
+	for i, c := range codecs {
 		fmt.Printf("%2d. %-15s - %d stations\n", i+1, c.Name, c.StationCount)
 	}
 
 	// Get languages
-	fmt.Println("\n=== Top 10 Languages ===\n")
+	fmt.Printf("\n=== Top 10 Languages ===\n\n")
 
 	languages, err := rb.Languages(ctx, baseURL, "", rb.LanguagesOptions{
 		Order:   "stationcount",
 		Reverse: true,
+		Limit:   10,
 	})
 	if err != nil {
 		log.Fatalf("Failed to get languages: %v", err)
 	}
 
-	for i, l := range languages[:min(10, len(languages))] {
+	for i, l := range languages {
 		fmt.Printf("%2d. %-20s - %d stations\n", i+1, l.Name, l.StationCount)
 	}
 
 	// Get states for a specific country
-	fmt.Println("\n=== US States with Most Stations ===\n")
+	fmt.Printf("\n=== US States with Most Stations ===\n\n")
 
-	states, err := rb.States(ctx, baseURL, "United States", "", rb.StatesOptions{
+	states, err := rb.States(ctx, baseURL, "The United States Of America", "", rb.StatesOptions{
 		Order:   "stationcount",
 		Reverse: true,
+		Limit:   10,
 	})
 	if err != nil {
 		log.Fatalf("Failed to get states: %v", err)
 	}
 
-	for i, s := range states[:min(10, len(states))] {
+	for i, s := range states {
 		fmt.Printf("%2d. %-25s - %d stations\n", i+1, s.Name, s.StationCount)
 	}
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }

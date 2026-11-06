@@ -17,7 +17,7 @@ import (
 const baseURL = "https://de1.api.radio-browser.info"
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(rb.WithUserAgent(context.Background(), "radiobrowser-go-examples/0.2.0"), 30*time.Second)
 	defer cancel()
 
 	opts := rb.StationsOptions{
@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Top voted stations
-	fmt.Println("=== Top 10 Stations by Votes ===\n")
+	fmt.Printf("=== Top 10 Stations by Votes ===\n\n")
 
 	topVoted, err := rb.StationsByVotes(ctx, baseURL, opts)
 	if err != nil {
@@ -35,11 +35,11 @@ func main() {
 
 	for i, s := range topVoted {
 		fmt.Printf("%2d. %-35s | %6d votes | %s\n",
-			i+1, truncate(s.Name, 35), s.Votes, s.Country)
+			i+1, truncate(s.Name, 35), s.Votes, s.CountryCode)
 	}
 
-	// Most clicked stations (all time)
-	fmt.Println("\n=== Top 10 Stations by Total Clicks ===\n")
+	// Most clicked stations in the last 24 hours
+	fmt.Printf("\n=== Top 10 Stations by Clicks in the Last 24 Hours ===\n\n")
 
 	topClicked, err := rb.StationsByClicks(ctx, baseURL, opts)
 	if err != nil {
@@ -48,11 +48,11 @@ func main() {
 
 	for i, s := range topClicked {
 		fmt.Printf("%2d. %-35s | %6d clicks | %s\n",
-			i+1, truncate(s.Name, 35), s.ClickCount, s.Country)
+			i+1, truncate(s.Name, 35), s.ClickCount, s.CountryCode)
 	}
 
 	// Recently played stations
-	fmt.Println("\n=== Recently Played Stations ===\n")
+	fmt.Printf("\n=== Recently Played Stations ===\n\n")
 
 	recentlyPlayed, err := rb.StationsByRecentClick(ctx, baseURL, opts)
 	if err != nil {
@@ -61,11 +61,11 @@ func main() {
 
 	for i, s := range recentlyPlayed {
 		fmt.Printf("%2d. %-35s | %s | %s\n",
-			i+1, truncate(s.Name, 35), s.ClickTimestamp, s.Country)
+			i+1, truncate(s.Name, 35), s.ClickTimestamp, s.CountryCode)
 	}
 
 	// Trending stations (by click trend)
-	fmt.Println("\n=== Trending Stations (by Click Trend) ===\n")
+	fmt.Printf("\n=== Trending Stations (by Click Trend) ===\n\n")
 
 	trending, err := rb.Stations(ctx, baseURL, rb.StationsOptions{
 		Limit:      10,
@@ -79,11 +79,11 @@ func main() {
 
 	for i, s := range trending {
 		fmt.Printf("%2d. %-35s | trend: %+d | %s\n",
-			i+1, truncate(s.Name, 35), s.ClickTrend, s.Country)
+			i+1, truncate(s.Name, 35), s.ClickTrend, s.CountryCode)
 	}
 
 	// Recently changed/added stations
-	fmt.Println("\n=== Recently Added/Changed Stations ===\n")
+	fmt.Printf("\n=== Recently Added/Changed Stations ===\n\n")
 
 	recentlyChanged, err := rb.StationsByRecentlyChanged(ctx, baseURL, opts)
 	if err != nil {
@@ -97,8 +97,9 @@ func main() {
 }
 
 func truncate(s string, maxLen int) string {
-	if len(s) <= maxLen {
+	runes := []rune(s)
+	if len(runes) <= maxLen {
 		return s
 	}
-	return s[:maxLen-3] + "..."
+	return string(runes[:maxLen-3]) + "..."
 }

@@ -181,6 +181,7 @@ func (o StreamingServersOptions) toQuery() url.Values {
 	return q
 }
 
+// Countries lists countries and ISO codes, optionally narrowed by a substring filter.
 func Countries(ctx context.Context, baseURL, filter string, opts CountriesOptions) ([]Country, error) {
 	path := "/json/countries"
 	filter = strings.TrimSpace(filter)
@@ -195,6 +196,7 @@ func Countries(ctx context.Context, baseURL, filter string, opts CountriesOption
 	return out, nil
 }
 
+// Codecs lists stream codecs and station counts.
 func Codecs(
 	ctx context.Context,
 	baseURL string,
@@ -214,6 +216,7 @@ func Codecs(
 	return out, nil
 }
 
+// States lists regions, optionally restricted by country name and region-name filter.
 func States(
 	ctx context.Context,
 	baseURL string,
@@ -239,6 +242,7 @@ func States(
 	return out, nil
 }
 
+// Languages lists stream languages and station counts.
 func Languages(
 	ctx context.Context,
 	baseURL string,
@@ -258,6 +262,7 @@ func Languages(
 	return out, nil
 }
 
+// Tags lists tags and station counts.
 func Tags(
 	ctx context.Context,
 	baseURL string,
@@ -277,6 +282,7 @@ func Tags(
 	return out, nil
 }
 
+// StreamingServers lists audio streaming servers, such as Icecast, rather than API mirrors.
 func StreamingServers(
 	ctx context.Context,
 	baseURL string,
