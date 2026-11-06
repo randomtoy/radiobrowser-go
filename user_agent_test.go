@@ -18,7 +18,7 @@ func TestUserAgent(t *testing.T) {
 		ctx  context.Context
 		want string
 	}{
-		{name: "default", ctx: parent, want: "radiobrowser-go/0.1.0"},
+		{name: "default", ctx: parent, want: "radiobrowser-go/0.2.0"},
 		{name: "application", ctx: app, want: "MyRadio/1.2"},
 		{name: "another application", ctx: rb.WithUserAgent(parent, "OtherRadio/2.0"), want: "OtherRadio/2.0"},
 		{name: "derived context", ctx: context.WithValue(app, struct{}{}, true), want: "MyRadio/1.2"},

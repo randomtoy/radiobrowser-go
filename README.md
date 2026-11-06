@@ -78,7 +78,7 @@ go run main.go
 
 ### User-Agent
 
-Every request sends `User-Agent: radiobrowser-go/0.1.0` by default, available as
+Every request sends `User-Agent: radiobrowser-go/0.2.0` by default, available as
 `rb.DefaultUserAgent`. Radio Browser [asks applications to identify themselves](https://de1.api.radio-browser.info/).
 Use `WithUserAgent` to send your application's name and version instead:
 

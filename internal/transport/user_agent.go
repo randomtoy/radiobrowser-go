@@ -6,7 +6,7 @@ import (
 )
 
 // DefaultUserAgent identifies the library. Update the version when releasing.
-const DefaultUserAgent = "radiobrowser-go/0.1.0"
+const DefaultUserAgent = "radiobrowser-go/0.2.0"
 
 type userAgentKey struct{}
 
