@@ -17,10 +17,12 @@ A zero-dependency Go client for the [Radio Browser JSON API](https://de1.api.rad
 
 The library covers the current, non-deprecated JSON endpoints documented by Radio Browser 0.7.45. Non-JSON exports, Prometheus `/metrics` and the deprecated `/countrycodes` endpoint are outside its scope.
 
+See the [changelog and migration guide](./CHANGELOG.md) for v0.3.0 changes.
+
 ## Installation
 
 ```bash
-go get github.com/randomtoy/radiobrowser-go
+go get github.com/randomtoy/radiobrowser-go@v0.3.0
 ```
 
 ## Quick start
@@ -61,8 +63,8 @@ Every API function takes a context and a base URL. Set a deadline on the context
 
 Every request sends a default `User-Agent` identifying the library and its version,
 available as `rb.DefaultUserAgent()`. The version is read automatically from Go's
-embedded module build information: for example, a dependency at `v0.2.0` sends
-`radiobrowser-go/0.2.0`. Pseudo-versions are preserved without the leading `v`.
+embedded module build information: for example, a dependency at `v0.3.0` sends
+`radiobrowser-go/0.3.0`. Pseudo-versions are preserved without the leading `v`.
 Unversioned builds, unavailable build information, and local `replace` directives
 use `radiobrowser-go/dev`. Versioned replacements use the replacement's version.
 Release tags determine the version; no source changes are needed for each release.
@@ -241,6 +243,8 @@ All paths below use the `/json` prefix. Optional filters, station UUIDs and pagi
 Search order constants cover all documented sort keys, including random order. `ClickCount` covers the last 24 hours; `ClickTrend` compares the last two days.
 
 ## Migration from v0.1.x and v0.2.x
+
+For upgrade commands and construction examples, see the [step-by-step migration guide](./CHANGELOG.md#migration-from-v01x-and-v02x).
 
 `Station.GeoLat` and `Station.GeoLong` are now `*float64`. Check for `nil` before dereferencing; unknown coordinates are no longer confused with `(0, 0)`:
 
