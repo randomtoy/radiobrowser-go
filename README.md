@@ -240,7 +240,7 @@ All paths below use the `/json` prefix. Optional filters, station UUIDs and pagi
 
 Search order constants cover all documented sort keys, including random order. `ClickCount` covers the last 24 hours; `ClickTrend` compares the last two days.
 
-## Migration from v0.1.x
+## Migration from v0.1.x and v0.2.x
 
 `Station.GeoLat` and `Station.GeoLong` are now `*float64`. Check for `nil` before dereferencing; unknown coordinates are no longer confused with `(0, 0)`:
 
