@@ -11,8 +11,8 @@ import (
 
 func TestCountries_OK_NoFilter(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/countries" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/countries" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		if r.URL.RawQuery != "" {
@@ -51,8 +51,8 @@ func TestCountries_OK_WithFilter_PathEscaped(t *testing.T) {
 	filter := "new york"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/countries/new%20york" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/countries/new%20york" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -136,8 +136,8 @@ func TestCountries_DecodeError(t *testing.T) {
 
 func TestCountries_FilterTrimmed(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/countries/abc" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/countries/abc" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -155,8 +155,8 @@ func TestCountries_FilterSpecialCharsEscaped(t *testing.T) {
 	escaped := url.PathEscape(filter)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/countries/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/countries/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -171,8 +171,8 @@ func TestCountries_FilterSpecialCharsEscaped(t *testing.T) {
 
 func TestCodecs_OK_NoFilter(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/codecs" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/codecs" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		if r.URL.RawQuery != "" {
@@ -208,8 +208,8 @@ func TestCodecs_OK_WithFilter_PathEscaped(t *testing.T) {
 	filter := "a a"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/codecs/a%20a" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/codecs/a%20a" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -293,8 +293,8 @@ func TestCodecs_DecodeError(t *testing.T) {
 
 func TestCodecs_FilterTrimmed(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/codecs/abc" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/codecs/abc" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -312,8 +312,8 @@ func TestCodecs_FilterSpecialCharsEscaped(t *testing.T) {
 	escaped := url.PathEscape(filter)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/codecs/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/codecs/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -328,8 +328,8 @@ func TestCodecs_FilterSpecialCharsEscaped(t *testing.T) {
 
 func TestStates_OK_NoCountry_NoFilter(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/states" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/states" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		if r.URL.RawQuery != "" {
 			t.Fatalf("unexpected query: %s", r.URL.RawQuery)
@@ -366,8 +366,8 @@ func TestStates_OK_FilterOnly_PathEscaped(t *testing.T) {
 	filter := "new york"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/states/new%20york" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/states/new%20york" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -384,8 +384,8 @@ func TestStates_OK_CountryOnly_PathEscaped(t *testing.T) {
 	country := "United States"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/states/United%20States" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/states/United%20States/" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -403,8 +403,8 @@ func TestStates_OK_CountryAndFilter_PathEscaped(t *testing.T) {
 	filter := "new york"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/states/United%20States/new%20york" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/states/United%20States/new%20york" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -490,8 +490,8 @@ func TestStates_TrimmedInputs(t *testing.T) {
 	filter := "  new york  "
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/states/United%20States/new%20york" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/states/United%20States/new%20york" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -511,8 +511,8 @@ func TestStates_EscapesSpecialChars(t *testing.T) {
 	wantFilter := url.PathEscape(filter)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/states/"+wantCountry+"/"+wantFilter {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/states/"+wantCountry+"/"+wantFilter {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -527,8 +527,8 @@ func TestStates_EscapesSpecialChars(t *testing.T) {
 
 func TestLanguages_OK_NoFilter(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/languages" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/languages" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		if r.URL.RawQuery != "" {
@@ -567,8 +567,8 @@ func TestLanguages_OK_WithFilter_PathEscaped(t *testing.T) {
 	filter := "new york"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/languages/new%20york" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/languages/new%20york" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -652,8 +652,8 @@ func TestLanguages_DecodeError(t *testing.T) {
 
 func TestLanguages_FilterTrimmed(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/languages/abc" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/languages/abc" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -671,8 +671,8 @@ func TestLanguages_FilterSpecialCharsEscaped(t *testing.T) {
 	escaped := url.PathEscape(filter)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/languages/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/languages/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -709,8 +709,8 @@ func TestLanguages_OK_MissingISO639(t *testing.T) {
 
 func TestTags_OK_NoFilter(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/tags" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/tags" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		if r.URL.RawQuery != "" {
@@ -746,8 +746,8 @@ func TestTags_OK_WithFilter_PathEscaped(t *testing.T) {
 	filter := "new york"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/tags/new%20york" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/tags/new%20york" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -831,8 +831,8 @@ func TestTags_DecodeError(t *testing.T) {
 
 func TestTags_FilterTrimmed(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/tags/abc" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/tags/abc" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -850,8 +850,8 @@ func TestTags_FilterSpecialCharsEscaped(t *testing.T) {
 	escaped := url.PathEscape(filter)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/tags/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/tags/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -866,8 +866,8 @@ func TestTags_FilterSpecialCharsEscaped(t *testing.T) {
 
 func TestStreamingServers_OK_NoQuery(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/streamingservers" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/streamingservers" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		if r.URL.RawQuery != "" {
 			t.Fatalf("unexpected query: %s", r.URL.RawQuery)

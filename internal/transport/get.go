@@ -20,7 +20,13 @@ func GetJSON(ctx context.Context, baseURL, path string, q url.Values, out any) e
 		return fmt.Errorf("invalid base url: %w", err)
 	}
 
-	u := base.ResolveReference(&url.URL{Path: path})
+	// Callers escape individual path segments. Path must contain the decoded
+	// value, with RawPath preserving escaped slashes and other delimiters.
+	decodedPath, err := url.PathUnescape(path)
+	if err != nil {
+		return fmt.Errorf("invalid request path: %w", err)
+	}
+	u := base.ResolveReference(&url.URL{Path: decodedPath, RawPath: path})
 	if len(q) > 0 {
 		u.RawQuery = q.Encode()
 	}

@@ -62,7 +62,7 @@ func StationClickCounter(
 		return nil, fmt.Errorf("stationuuid is empty")
 	}
 
-	path := "/json/click/" + url.PathEscape(stationUUID)
+	path := "/json/url/" + url.PathEscape(stationUUID)
 
 	var out StationClickCounterResponse
 	if err := transport.GetJSON(ctx, baseURL, path, nil, &out); err != nil {

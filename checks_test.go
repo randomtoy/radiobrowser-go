@@ -11,8 +11,8 @@ import (
 
 func TestStationCheckResults_OK_NoStationUUID(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/checks" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/checks" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		if r.URL.RawQuery != "" {
 			t.Fatalf("unexpected query: %s", r.URL.RawQuery)
@@ -152,8 +152,8 @@ func TestStationCheckResults_OK_WithStationUUID_PathEscaped(t *testing.T) {
 	escaped := url.PathEscape(stationUUID)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/checks/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/checks/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -233,8 +233,8 @@ func TestStationCheckResults_DecodeError(t *testing.T) {
 
 func TestStationCheckResults_StationUUIDTrimmed(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/checks/s1" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/checks/s1" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -249,8 +249,8 @@ func TestStationCheckResults_StationUUIDTrimmed(t *testing.T) {
 
 func TestStationCheckSteps_OK_QueryUUIDs(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/checksteps" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/checksteps" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()

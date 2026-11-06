@@ -11,8 +11,8 @@ import (
 
 func TestStationClicks_OK_NoStationUUID(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/clicks" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/clicks" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		if r.URL.RawQuery != "" {
 			t.Fatalf("unexpected query: %s", r.URL.RawQuery)
@@ -58,8 +58,8 @@ func TestStationClicks_OK_WithStationUUID_PathEscaped(t *testing.T) {
 	escaped := url.PathEscape(stationUUID)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/clicks/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/clicks/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -139,8 +139,8 @@ func TestStationClicks_DecodeError(t *testing.T) {
 
 func TestStationClicks_StationUUIDTrimmed(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/clicks/s1" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/clicks/s1" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -155,8 +155,8 @@ func TestStationClicks_StationUUIDTrimmed(t *testing.T) {
 
 func TestStationClickCounter_OK(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/click/s1" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/url/s1" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -179,8 +179,8 @@ func TestStationClickCounter_PathEscaped(t *testing.T) {
 	escaped := url.PathEscape(uuid)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/click/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/url/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true}`))

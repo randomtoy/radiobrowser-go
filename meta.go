@@ -197,9 +197,8 @@ func States(
 	filter = strings.TrimSpace(filter)
 
 	if country != "" {
-		path += "/" + url.PathEscape(country)
-	}
-	if filter != "" {
+		path += "/" + url.PathEscape(country) + "/" + url.PathEscape(filter)
+	} else if filter != "" {
 		path += "/" + url.PathEscape(filter)
 	}
 
