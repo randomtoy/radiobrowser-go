@@ -76,6 +76,31 @@ go run main.go
 
 ## Usage
 
+### User-Agent
+
+Every request sends a default `User-Agent` identifying the library and its version,
+available as `rb.DefaultUserAgent()`. The version is read automatically from Go's
+embedded module build information: for example, a dependency at `v0.2.0` sends
+`radiobrowser-go/0.2.0`. Pseudo-versions are preserved without the leading `v`.
+Unversioned builds, unavailable build information, and local `replace` directives
+use `radiobrowser-go/dev`. Versioned replacements use the replacement's version.
+Release tags determine the version; no source changes are needed for each release.
+
+Radio Browser [asks applications to identify themselves](https://de1.api.radio-browser.info/).
+Use `WithUserAgent` to send your application's name and version instead:
+
+```go
+ctx := rb.WithUserAgent(context.Background(), "MyRadio/1.2")
+
+stations, err := rb.Stations(ctx, baseURL, rb.StationsOptions{Limit: 10})
+```
+
+The override applies to all API calls using this context or a derived context,
+including POST requests. It does not change other contexts or a global setting,
+so different applications or clients can use different values concurrently.
+Leading and trailing whitespace is removed; an empty or whitespace-only value
+restores the library default. Existing calls require no changes.
+
 ### Advanced Search with Multiple Filters
 
 ```go
