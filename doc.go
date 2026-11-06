@@ -1,6 +1,7 @@
 // Package radiobrowser provides a zero-dependency client for the Radio Browser
 // JSON API. Functions accept a context for cancellation and a base URL selecting
-// an API server. Use WithUserAgent to identify the calling application.
+// an API server. DiscoverServers finds server URLs through DNS before the first
+// HTTP request. Use WithUserAgent to identify the calling application.
 //
 // Station discovery, metadata, checks, history and server information are read
 // operations. AddStation, VoteForStation and StationClickCounter modify upstream
