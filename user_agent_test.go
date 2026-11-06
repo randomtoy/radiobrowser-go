@@ -18,13 +18,13 @@ func TestUserAgent(t *testing.T) {
 		ctx  context.Context
 		want string
 	}{
-		{name: "default", ctx: parent, want: "radiobrowser-go/0.2.0"},
+		{name: "default", ctx: parent, want: rb.DefaultUserAgent()},
 		{name: "application", ctx: app, want: "MyRadio/1.2"},
 		{name: "another application", ctx: rb.WithUserAgent(parent, "OtherRadio/2.0"), want: "OtherRadio/2.0"},
 		{name: "derived context", ctx: context.WithValue(app, struct{}{}, true), want: "MyRadio/1.2"},
 		{name: "nested override", ctx: rb.WithUserAgent(app, "OtherRadio/2.0"), want: "OtherRadio/2.0"},
-		{name: "empty resets default", ctx: rb.WithUserAgent(app, ""), want: rb.DefaultUserAgent},
-		{name: "whitespace resets default", ctx: rb.WithUserAgent(app, " \t "), want: rb.DefaultUserAgent},
+		{name: "empty resets default", ctx: rb.WithUserAgent(app, ""), want: rb.DefaultUserAgent()},
+		{name: "whitespace resets default", ctx: rb.WithUserAgent(app, " \t "), want: rb.DefaultUserAgent()},
 		{name: "trim whitespace", ctx: rb.WithUserAgent(parent, " \tMyRadio/1.2 \t"), want: "MyRadio/1.2"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
