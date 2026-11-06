@@ -14,6 +14,8 @@ type ClicksOptions struct {
 	LastClickUUID string
 	Seconds       int
 	Limit         int
+	// LimitSet sends Limit even when it is zero.
+	LimitSet bool
 }
 
 func (o ClicksOptions) toQuery() url.Values {
@@ -25,7 +27,7 @@ func (o ClicksOptions) toQuery() url.Values {
 	if o.Seconds > 0 {
 		q.Set("seconds", strconv.Itoa(o.Seconds))
 	}
-	if o.Limit > 0 {
+	if o.Limit > 0 || o.LimitSet {
 		q.Set("limit", strconv.Itoa(o.Limit))
 	}
 

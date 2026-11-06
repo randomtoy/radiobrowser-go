@@ -29,12 +29,16 @@ type AddStationRequest struct {
 	Name string
 	URL  string
 
-	Homepage    string
-	Favicon     string
-	CountryCode string
-	State       string
-	Language    string
-	Tags        string
+	Homepage      string
+	Favicon       string
+	CountryCode   string
+	ISO3166_2     string
+	LanguageCodes string
+	// Deprecated: use ISO3166_2 instead.
+	State string
+	// Deprecated: use LanguageCodes instead.
+	Language string
+	Tags     string
 
 	GeoLat  *float64
 	GeoLong *float64
@@ -47,7 +51,7 @@ func (r AddStationRequest) validate() error {
 	if strings.TrimSpace(r.URL) == "" {
 		return fmt.Errorf("url is empty")
 	}
-	return nil
+	return validateCoordinates(r.GeoLat, r.GeoLong)
 }
 
 func (r AddStationRequest) toForm() url.Values {
@@ -64,6 +68,12 @@ func (r AddStationRequest) toForm() url.Values {
 	}
 	if s := strings.TrimSpace(r.CountryCode); s != "" {
 		f.Set("countrycode", s)
+	}
+	if s := strings.TrimSpace(r.ISO3166_2); s != "" {
+		f.Set("iso_3166_2", s)
+	}
+	if s := strings.TrimSpace(r.LanguageCodes); s != "" {
+		f.Set("languagecodes", s)
 	}
 	if s := strings.TrimSpace(r.State); s != "" {
 		f.Set("state", s)
