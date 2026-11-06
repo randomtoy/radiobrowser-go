@@ -11,8 +11,8 @@ import (
 
 func TestStations_OK_QueryParams(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()
@@ -130,8 +130,8 @@ func TestStations_DecodeError(t *testing.T) {
 func TestStationsSearch_OK_PathAndQuery(t *testing.T) {
 	term := "new york"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/byname/new%20york" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/byname/new%20york" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()
@@ -200,8 +200,8 @@ func TestStationsSearch_DecodeError(t *testing.T) {
 
 func TestStationsByUUID_OK_QueryUUIDs(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/byuuid" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/byuuid" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		if r.URL.Query().Get("uuids") != "u1,u2" {
@@ -328,8 +328,8 @@ func TestStationsSearch_PathEscapes(t *testing.T) {
 	escaped := url.PathEscape(term)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/byname/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/byname/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))
@@ -342,13 +342,12 @@ func TestStationsSearch_PathEscapes(t *testing.T) {
 	}
 }
 
-func TestStationsByURL_OK_PathEscapedAndQuery(t *testing.T) {
+func TestStationsByURL_OK_URLQuery(t *testing.T) {
 	rawURL := "http://example.com/a?b=c&d=e"
-	escaped := url.PathEscape(rawURL)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/byurl/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/byurl" || r.URL.Query().Get("url") != rawURL {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		if r.URL.Query().Get("limit") != "3" {
 			t.Fatalf("unexpected limit: %q", r.URL.Query().Get("limit"))
@@ -392,11 +391,10 @@ func TestStationsByURL_Non2xx(t *testing.T) {
 
 func TestStationsByURL_DecodeError(t *testing.T) {
 	rawURL := "http://example.com/stream"
-	escaped := url.PathEscape(rawURL)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/byurl/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/byurl" || r.URL.Query().Get("url") != rawURL {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"bad_json":`))
@@ -418,8 +416,8 @@ func TestStationsByURL_InvalidBaseURL(t *testing.T) {
 
 func TestStationsByClicks_OK_QueryParams(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/byclick" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/topclick" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()
@@ -493,8 +491,8 @@ func TestStationsByClicks_InvalidBaseURL(t *testing.T) {
 
 func TestStationsByVotes_OK_QueryParams(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/topvote" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/topvote" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()
@@ -560,8 +558,8 @@ func TestStationsByVotes_InvalidBaseURL(t *testing.T) {
 
 func TestStationsByRecentClick_OK_QueryParams(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/lastclick" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/lastclick" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()
@@ -627,8 +625,8 @@ func TestStationsByRecentClick_InvalidBaseURL(t *testing.T) {
 
 func TestStationsByRecentlyChanged_OK_QueryParams(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/lastchange" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/lastchange" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()
@@ -694,8 +692,8 @@ func TestStationsByRecentlyChanged_InvalidBaseURL(t *testing.T) {
 
 func TestStationsChanged_OK_NoStationUUID_QueryParams(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/changed" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/changed" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()
@@ -725,8 +723,8 @@ func TestStationsChanged_OK_WithStationUUID_PathEscaped(t *testing.T) {
 	escaped := url.PathEscape(uuid)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/changed/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/changed/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -777,8 +775,8 @@ func TestStationsChanged_InvalidBaseURL(t *testing.T) {
 
 func TestStationsBroken_OK_QueryParams(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/broken" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/broken" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()
@@ -847,8 +845,8 @@ func TestStationSearch_OK_QueryParams(t *testing.T) {
 	isHTTPS := false
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/stations/search" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/stations/search" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		q := r.URL.Query()

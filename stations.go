@@ -76,10 +76,11 @@ func StationsByURL(
 		return nil, fmt.Errorf("url is empty")
 	}
 
-	path := "/json/stations/byurl/" + url.PathEscape(rawURL)
+	q := opts.toQuery()
+	q.Set("url", rawURL)
 
 	var out []Station
-	if err := transport.GetJSON(ctx, baseURL, path, opts.toQuery(), &out); err != nil {
+	if err := transport.GetJSON(ctx, baseURL, "/json/stations/byurl", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -87,7 +88,7 @@ func StationsByURL(
 
 func StationsByClicks(ctx context.Context, baseURL string, opts StationsOptions) ([]Station, error) {
 	var out []Station
-	if err := transport.GetJSON(ctx, baseURL, "/json/stations/byclick", opts.toQuery(), &out); err != nil {
+	if err := transport.GetJSON(ctx, baseURL, "/json/stations/topclick", opts.toQuery(), &out); err != nil {
 		return nil, err
 	}
 	return out, nil

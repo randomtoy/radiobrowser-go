@@ -17,8 +17,8 @@ func TestAddStation_OK_FormParams(t *testing.T) {
 		if r.Method != http.MethodPost {
 			t.Fatalf("unexpected method: %s", r.Method)
 		}
-		if r.URL.Path != "/json/add" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/add" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		if ct := r.Header.Get("Content-Type"); !strings.HasPrefix(ct, "application/x-www-form-urlencoded") {
 			t.Fatalf("unexpected content-type: %q", ct)
@@ -174,8 +174,8 @@ var _ = url.Values{}
 
 func TestVoteForStation_OK(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/vote/s1" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/vote/s1" {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -200,8 +200,8 @@ func TestVoteForStation_PathEscaped(t *testing.T) {
 	escaped := url.PathEscape(uuid)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/json/vote/"+escaped {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/json/vote/"+escaped {
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"message":"ok"}`))
