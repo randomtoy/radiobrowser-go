@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.4.0] - 2026-11-06
+
+This additive release supports discovering Radio Browser API servers before the
+first HTTP request. Existing explicit-base-URL functions remain compatible.
+
+### Added
+
+- `DiscoverServers(ctx)` queries `_api._tcp.radio-browser.info` through Go's
+  default DNS resolver, without requiring a known server or an HTTP request.
+- Discovery returns unique HTTPS base URLs in randomized order, removes DNS
+  trailing dots and preserves non-default service ports.
+- Context cancellation/deadlines and wrapped DNS errors are preserved. Empty or
+  unusable DNS results return an error instead of an empty successful result.
+- A runnable discovery example demonstrates bounded read-only attempts across
+  discovered mirrors. Discovery itself does not check HTTP health or add
+  automatic retries to existing API functions.
+- README quick start and package documentation explain DNS bootstrapping and
+  distinguish it from `Servers(ctx, baseURL)`, the HTTP mirror-list endpoint.
+- GitHub Actions checks formatting, tests with the race detector, vet and builds
+  on Go 1.22 and the current stable Go version for pull requests and releases.
+
+Upgrade with `go get github.com/randomtoy/radiobrowser-go@v0.4.0`. No source changes
+are required when upgrading from v0.3.0. Call `DiscoverServers` once before API
+requests to obtain server URLs rather than hardcoding a mirror.
+
+Related: [#16](https://github.com/randomtoy/radiobrowser-go/issues/16).
+
 ## [0.3.0] - 2026-11-06
 
 This release completes the current, non-deprecated Radio Browser JSON API coverage
@@ -138,4 +165,5 @@ JSON API scope.
 - [#7](https://github.com/randomtoy/radiobrowser-go/issues/7): documentation and examples
   ([PR #13](https://github.com/randomtoy/radiobrowser-go/pull/13)).
 
+[0.4.0]: https://github.com/randomtoy/radiobrowser-go/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/randomtoy/radiobrowser-go/compare/v0.2.0...v0.3.0

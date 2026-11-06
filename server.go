@@ -15,8 +15,8 @@ func Stats(ctx context.Context, baseURL string) (*ServerStats, error) {
 	return &out, nil
 }
 
-// Servers returns API mirrors from /json/servers. Prefer client-side DNS lookup
-// of all.api.radio-browser.info when available, as recommended by Radio Browser.
+// Servers returns API mirrors from /json/servers using a known API server.
+// Prefer DiscoverServers for DNS discovery before the first HTTP request.
 // Unlike StreamingServers, these hosts serve the Radio Browser API itself.
 func Servers(ctx context.Context, baseURL string) ([]ServerMirror, error) {
 	var out []ServerMirror

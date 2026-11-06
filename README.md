@@ -13,16 +13,17 @@ A zero-dependency Go client for the [Radio Browser JSON API](https://de1.api.rad
 - Availability checks, check steps, click history and station change history.
 - Voting, play registration and station creation with current subdivision/language codes.
 - API server statistics, mirror lists and configuration.
+- DNS discovery of API servers before the first HTTP request.
 - Context cancellation and application-specific User-Agent headers.
 
 The library covers the current, non-deprecated JSON endpoints documented by Radio Browser 0.7.45. Non-JSON exports, Prometheus `/metrics` and the deprecated `/countrycodes` endpoint are outside its scope.
 
-See the [changelog and migration guide](./CHANGELOG.md) for v0.3.0 changes.
+See the [changelog and migration guide](./CHANGELOG.md) for release changes.
 
 ## Installation
 
 ```bash
-go get github.com/randomtoy/radiobrowser-go@v0.3.0
+go get github.com/randomtoy/radiobrowser-go@v0.4.0
 ```
 
 ## Quick start
@@ -44,7 +45,11 @@ func main() {
     defer cancel()
     ctx = rb.WithUserAgent(ctx, "MyRadio/1.0")
 
-    stations, err := rb.StationsSearch(ctx, "https://de1.api.radio-browser.info",
+    servers, err := rb.DiscoverServers(ctx)
+    if err != nil {
+        log.Fatal(err)
+    }
+    stations, err := rb.StationsSearch(ctx, servers[0],
         rb.StationByCountryCodeExact, "DE", rb.StationsOptions{
             Limit: 10, Order: rb.StationOrderVotes, Reverse: true, HideBroken: true,
         })
@@ -57,7 +62,7 @@ func main() {
 }
 ```
 
-Every API function takes a context and a base URL. Set a deadline on the context to bound request duration; the shared HTTP client has no default timeout. HTTP, network and JSON decoding failures are returned as errors. For action responses, also inspect `OK` and `Message`: an HTTP-successful response can report an unsuccessful operation.
+Every HTTP API function takes a context and a base URL. `DiscoverServers` only needs a context. Set a deadline on the context to bound DNS lookup and request duration; the shared HTTP client has no default timeout. HTTP, network and JSON decoding failures are returned as errors. For action responses, also inspect `OK` and `Message`: an HTTP-successful response can report an unsuccessful operation.
 
 ### User-Agent
 
@@ -191,6 +196,30 @@ added, err := rb.AddStation(ctx, baseURL, rb.AddStationRequest{
 
 ## API servers
 
+Discover available API server addresses before making HTTP requests:
+
+```go
+servers, err := rb.DiscoverServers(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+baseURL := servers[0]
+```
+
+`DiscoverServers` uses `net.DefaultResolver` to query the DNS SRV record
+`_api._tcp.radio-browser.info`, an approach supported by the
+[Radio Browser discovery instructions](https://api.radio-browser.info/).
+It requires no bootstrap server or HTTP request. Results are unique HTTPS base
+URLs in randomized order, without DNS trailing dots. Non-default service ports
+are preserved. DNS errors, cancellation, expired deadlines and results containing
+no usable servers return an error; a successful result always contains a URL.
+
+DNS discovery does not check HTTP health. Select the first URL and try the
+remaining URLs if a request fails, giving each attempt a timeout within the
+overall context deadline. The [discovery example](./examples/discovery) shows
+this for a read-only request. Existing API functions still accept the selected
+URL explicitly and do not automatically retry requests.
+
 ```go
 stats, err := rb.Stats(ctx, baseURL)
 ```
@@ -203,16 +232,20 @@ config, err := rb.Config(ctx, baseURL)
 mirrors, err := rb.Servers(ctx, baseURL)
 ```
 
-`Servers` lists Radio Browser API mirrors with their hostname and IPv4/IPv6 address. Radio Browser recommends DNS lookup of `all.api.radio-browser.info`, followed by reverse lookup, when client-side DNS is available; the HTTP endpoint is its fallback. The library accepts the selected server URL explicitly and does not automatically discover or retry mirrors.
+`Servers` lists Radio Browser API mirrors with their hostname and IPv4/IPv6 address.
+It requires a known server URL, so use `DiscoverServers` to bootstrap through DNS.
+The HTTP endpoint remains useful as a fallback when client-side DNS discovery is
+unavailable and an API server URL is already known.
 
 `StreamingServers` is a different endpoint: it lists audio streaming servers such as Icecast, including their administrative/status metadata. It does not list API mirrors.
 
 ## API reference
 
-All paths below use the `/json` prefix. Optional filters, station UUIDs and pagination parameters are omitted for brevity.
+`DiscoverServers` uses DNS rather than an HTTP endpoint. All HTTP paths below use the `/json` prefix. Optional filters, station UUIDs and pagination parameters are omitted for brevity.
 
 | Function | Endpoint / purpose |
 |----------|--------------------|
+| `DiscoverServers` | DNS SRV lookup — randomized HTTPS API server URLs |
 | `Stations` | `/stations` — all stations |
 | `StationsSearch` | `/stations/{kind}/{term}` — all 14 documented simple search variants |
 | `StationSearch` | `/stations/search` — advanced filters and geographic search |
@@ -265,6 +298,7 @@ Station responses also expose `ISO3166_2`, `LastLocalCheckTimeISO`, `SSLError` a
 | [metadata](./examples/metadata) | Bounded countries, tags, codecs, languages and regions |
 | [topstations](./examples/topstations) | Votes, 24-hour clicks, recent activity and trends |
 | [server](./examples/server) | Server statistics and configuration; optional HTTP mirror lookup |
+| [discovery](./examples/discovery) | DNS discovery and read-only requests with mirror fallback |
 
 Run from the repository root:
 
@@ -274,6 +308,7 @@ go run ./examples/search
 go run ./examples/metadata
 go run ./examples/topstations
 go run ./examples/server
+go run ./examples/discovery
 ```
 
 Examples only read API data. Tests exercise station creation, voting and play registration against local HTTP servers. The regular test suite does not depend on the public API:
