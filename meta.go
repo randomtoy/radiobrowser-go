@@ -14,6 +14,9 @@ type CountriesOptions struct {
 	Reverse    bool
 	HideBroken bool
 	Offset     int
+	Limit      int
+	// LimitSet sends Limit even when it is zero.
+	LimitSet bool
 }
 
 func (o CountriesOptions) toQuery() url.Values {
@@ -32,6 +35,9 @@ func (o CountriesOptions) toQuery() url.Values {
 		q.Set("offset", strconv.Itoa(o.Offset))
 	}
 
+	if o.Limit > 0 || o.LimitSet {
+		q.Set("limit", strconv.Itoa(o.Limit))
+	}
 	return q
 }
 
@@ -40,6 +46,9 @@ type CodecsOptions struct {
 	Reverse    bool
 	HideBroken bool
 	Offset     int
+	Limit      int
+	// LimitSet sends Limit even when it is zero.
+	LimitSet bool
 }
 
 func (o CodecsOptions) toQuery() url.Values {
@@ -58,6 +67,9 @@ func (o CodecsOptions) toQuery() url.Values {
 		q.Set("offset", strconv.Itoa(o.Offset))
 	}
 
+	if o.Limit > 0 || o.LimitSet {
+		q.Set("limit", strconv.Itoa(o.Limit))
+	}
 	return q
 }
 
@@ -66,6 +78,9 @@ type StatesOptions struct {
 	Reverse    bool
 	HideBroken bool
 	Offset     int
+	Limit      int
+	// LimitSet sends Limit even when it is zero.
+	LimitSet bool
 }
 
 func (o StatesOptions) toQuery() url.Values {
@@ -84,6 +99,9 @@ func (o StatesOptions) toQuery() url.Values {
 		q.Set("offset", strconv.Itoa(o.Offset))
 	}
 
+	if o.Limit > 0 || o.LimitSet {
+		q.Set("limit", strconv.Itoa(o.Limit))
+	}
 	return q
 }
 
@@ -92,6 +110,9 @@ type LanguagesOptions struct {
 	Reverse    bool
 	HideBroken bool
 	Offset     int
+	Limit      int
+	// LimitSet sends Limit even when it is zero.
+	LimitSet bool
 }
 
 func (o LanguagesOptions) toQuery() url.Values {
@@ -110,6 +131,9 @@ func (o LanguagesOptions) toQuery() url.Values {
 		q.Set("offset", strconv.Itoa(o.Offset))
 	}
 
+	if o.Limit > 0 || o.LimitSet {
+		q.Set("limit", strconv.Itoa(o.Limit))
+	}
 	return q
 }
 
@@ -118,6 +142,9 @@ type TagsOptions struct {
 	Reverse    bool
 	HideBroken bool
 	Offset     int
+	Limit      int
+	// LimitSet sends Limit even when it is zero.
+	LimitSet bool
 }
 
 func (o TagsOptions) toQuery() url.Values {
@@ -136,6 +163,9 @@ func (o TagsOptions) toQuery() url.Values {
 		q.Set("offset", strconv.Itoa(o.Offset))
 	}
 
+	if o.Limit > 0 || o.LimitSet {
+		q.Set("limit", strconv.Itoa(o.Limit))
+	}
 	return q
 }
 

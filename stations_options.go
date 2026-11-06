@@ -30,10 +30,12 @@ const (
 )
 
 type StationsOptions struct {
-	Order      StationOrder
-	Reverse    bool
-	Offset     int
-	Limit      int
+	Order   StationOrder
+	Reverse bool
+	Offset  int
+	Limit   int
+	// LimitSet sends Limit even when it is zero; otherwise zero uses the server default.
+	LimitSet   bool
 	HideBroken bool
 }
 
@@ -49,7 +51,7 @@ func (o StationsOptions) toQuery() url.Values {
 	if o.Offset > 0 {
 		q.Set("offset", strconv.Itoa(o.Offset))
 	}
-	if o.Limit > 0 {
+	if o.Limit > 0 || o.LimitSet {
 		q.Set("limit", strconv.Itoa(o.Limit))
 	}
 	if o.HideBroken {
@@ -81,6 +83,8 @@ const (
 type StationsChangedOptions struct {
 	LastChangeUUID string
 	Limit          int
+	// LimitSet sends Limit even when it is zero.
+	LimitSet bool
 }
 
 func (o StationsChangedOptions) toQuery() url.Values {
@@ -89,7 +93,7 @@ func (o StationsChangedOptions) toQuery() url.Values {
 	if s := strings.TrimSpace(o.LastChangeUUID); s != "" {
 		q.Set("lastchangeuuid", s)
 	}
-	if o.Limit > 0 {
+	if o.Limit > 0 || o.LimitSet {
 		q.Set("limit", strconv.Itoa(o.Limit))
 	}
 
@@ -117,11 +121,17 @@ type StationSearchOptions struct {
 	HasGeoInfo      *bool
 	HasExtendedInfo *bool
 	IsHTTPS         *bool
+	GeoLat          *float64
+	GeoLong         *float64
+	// GeoDistance filters stations within this radius in meters.
+	GeoDistance *float64
 
-	Order      StationOrder
-	Reverse    bool
-	Offset     int
-	Limit      int
+	Order   StationOrder
+	Reverse bool
+	Offset  int
+	Limit   int
+	// LimitSet sends Limit even when it is zero; otherwise zero uses the server default.
+	LimitSet   bool
 	HideBroken bool
 }
 
@@ -201,6 +211,15 @@ func (o StationSearchOptions) toQuery() url.Values {
 	if o.IsHTTPS != nil {
 		q.Set("is_https", strconv.FormatBool(*o.IsHTTPS))
 	}
+	if o.GeoLat != nil {
+		q.Set("geo_lat", strconv.FormatFloat(*o.GeoLat, 'f', -1, 64))
+	}
+	if o.GeoLong != nil {
+		q.Set("geo_long", strconv.FormatFloat(*o.GeoLong, 'f', -1, 64))
+	}
+	if o.GeoDistance != nil {
+		q.Set("geo_distance", strconv.FormatFloat(*o.GeoDistance, 'f', -1, 64))
+	}
 
 	if o.Order != "" {
 		q.Set("order", string(o.Order))
@@ -211,7 +230,7 @@ func (o StationSearchOptions) toQuery() url.Values {
 	if o.Offset > 0 {
 		q.Set("offset", strconv.Itoa(o.Offset))
 	}
-	if o.Limit > 0 {
+	if o.Limit > 0 || o.LimitSet {
 		q.Set("limit", strconv.Itoa(o.Limit))
 	}
 	if o.HideBroken {

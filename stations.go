@@ -151,6 +151,9 @@ func StationSearch(
 	baseURL string,
 	opts StationSearchOptions,
 ) ([]Station, error) {
+	if err := opts.validate(); err != nil {
+		return nil, err
+	}
 	var out []Station
 	if err := transport.GetJSON(ctx, baseURL, "/json/stations/search", opts.toQuery(), &out); err != nil {
 		return nil, err
