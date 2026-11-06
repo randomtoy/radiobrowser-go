@@ -59,7 +59,16 @@ Every API function takes a context and a base URL. Set a deadline on the context
 
 ### User-Agent
 
-Requests use `rb.DefaultUserAgent` (`radiobrowser-go/0.2.0`) unless overridden. Radio Browser asks clients to identify their application and version:
+Every request sends a default `User-Agent` identifying the library and its version,
+available as `rb.DefaultUserAgent()`. The version is read automatically from Go's
+embedded module build information: for example, a dependency at `v0.2.0` sends
+`radiobrowser-go/0.2.0`. Pseudo-versions are preserved without the leading `v`.
+Unversioned builds, unavailable build information, and local `replace` directives
+use `radiobrowser-go/dev`. Versioned replacements use the replacement's version.
+Release tags determine the version; no source changes are needed for each release.
+
+Radio Browser [asks applications to identify themselves](https://de1.api.radio-browser.info/).
+Use `WithUserAgent` to send your application's name and version instead:
 
 ```go
 ctx := rb.WithUserAgent(context.Background(), "MyRadio/1.2")
